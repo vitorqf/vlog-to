@@ -6,17 +6,20 @@ import Link from "next/link";
 import { LogoutButton } from "./logout-button";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Button } from "./ui/button";
+import { Skeleton } from "./ui/skeleton";
 
 export function AuthButton() {
   const supabase = createClient();
 
-  const { data: user } = useQuery({
+  const { data: user, isLoading } = useQuery({
     queryKey: ["auth-user"],
     queryFn: async () => {
       const { data } = await supabase.auth.getUser();
       return data.user;
     },
   });
+
+  if (isLoading) return <Skeleton className="w-60 h-8" />;
 
   return user ? (
     <div className="flex items-center gap-4">

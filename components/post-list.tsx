@@ -15,12 +15,16 @@ import "@vidstack/react/player/styles/base.css";
 import "@vidstack/react/player/styles/plyr/theme.css";
 import { motion } from "framer-motion";
 import { ThumbsUp } from "lucide-react";
+import { Skeleton } from "./ui/skeleton";
 
 export function PostList() {
   const { data: posts, isLoading, error } = usePostsWithLikes();
   const toggleLike = useToggleLike();
 
-  if (isLoading) return <p>Carregando...</p>;
+  if (isLoading)
+    return Array.from({ length: 6 }).map((_, index) => (
+      <Skeleton key={index} className="w-full h-[36rem]" />
+    ));
   if (error) return <p>Erro ao carregar posts</p>;
 
   return (
@@ -77,11 +81,9 @@ export function PostList() {
               whileTap={{ scale: 0.9 }}
               whileHover={{ scale: 1.1 }}
               initial={{ scale: 1 }}
-              animate={{
-                scale: post.likedByUser ? 1.2 : 1,
-                paddingLeft: post.likedByUser ? "8px" : "4px",
+              transition={{
+                ease: "easeInOut",
               }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
               aria-label={post.likedByUser ? "Descurtir" : "Curtir"}
             >
               <ThumbsUp
