@@ -26,9 +26,10 @@ export function PostList() {
   return (
     <>
       {posts?.map((post) => (
-        <div key={post.id} className="rounded-lg w-full mb-6">
-          <h2 className="text-lg font-semibold mb-2">{post.title}</h2>
-          <p className="text-sm text-gray-400 mb-4">{post.description}</p>
+        <div
+          key={post.id}
+          className="border border-border p-4 rounded-lg w-full mb-6"
+        >
           <div className="flex items-center justify-between w-full mb-4">
             <div className="flex items-center gap-2">
               <Avatar>
@@ -42,25 +43,29 @@ export function PostList() {
               {moment(post.created_at).fromNow()}
             </span>
           </div>
+          <h2 className="text-lg font-semibold mb-2">{post.title}</h2>
+          <p className="text-sm text-gray-400 mb-4">{post.description}</p>
 
-          {post.media_type === "video" ? (
-            <MediaPlayer
-              src={post.media_url}
-              hideControlsOnMouseLeave
-              className="container rounded object-cover"
-            >
-              <MediaProvider />
-              <PlyrLayout icons={plyrLayoutIcons} />
-            </MediaPlayer>
-          ) : (
-            <Image
-              src={post.media_url}
-              alt={post.title}
-              width={400}
-              height={300}
-              className="container rounded object-cover max-h-[600px]"
-            />
-          )}
+          <div className="border-b border-t border-border">
+            {post.media_type === "video" ? (
+              <MediaPlayer
+                src={post.media_url}
+                hideControlsOnMouseLeave
+                className="container rounded-lg object-cover "
+              >
+                <MediaProvider />
+                <PlyrLayout icons={plyrLayoutIcons} />
+              </MediaPlayer>
+            ) : (
+              <Image
+                src={post.media_url}
+                alt={post.title}
+                width={400}
+                height={300}
+                className=" container rounded-lg object-cover "
+              />
+            )}
+          </div>
 
           <div className="flex items-center mt-4 gap-4">
             <motion.button

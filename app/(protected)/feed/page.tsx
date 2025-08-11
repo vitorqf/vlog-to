@@ -13,7 +13,7 @@ export default async function Feed() {
         <h1 className="text-3xl font-bold">Feed</h1>
         <AddPost />
       </div>
-      <div className="w-full flex flex-col gap-12 items-center mx-auto">
+      <div className="w-full flex flex-col gap-6 items-center mx-auto">
         <PostList />
       </div>
     </div>

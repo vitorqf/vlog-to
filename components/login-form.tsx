@@ -12,38 +12,52 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+
+const loginSchema = z.object({
+  email: z.email("Digite um e-mail válido"),
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const supabase = createClient();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const supabase = createClient();
-    setIsLoading(true);
-    setError(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
-    try {
+  const mutation = useMutation({
+    mutationFn: async (data: LoginFormData) => {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: data.email,
+        password: data.password,
       });
       if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["auth-user"] });
       router.push("/feed");
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Ocorreu um erro");
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  const onSubmit = (data: LoginFormData) => {
+    mutation.mutate(data);
   };
 
   return (
@@ -56,7 +70,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">E-mail</Label>
@@ -64,10 +78,11 @@ export function LoginForm({
                   id="email"
                   type="email"
                   placeholder="exemplo@exemplo.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  {...register("email")}
                 />
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                )}
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
@@ -82,14 +97,27 @@ export function LoginForm({
                 <Input
                   id="password"
                   type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register("password")}
                 />
+                {errors.password && (
+                  <p className="text-sm text-red-500">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Entrando..." : "Entrar"}
+              {mutation.isError && (
+                <p className="text-sm text-red-500 mt-1">
+                  {mutation.error instanceof Error
+                    ? mutation.error.message
+                    : "Ocorreu um erro"}
+                </p>
+              )}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={mutation.isPending}
+              >
+                {mutation.isPending ? "Entrando..." : "Entrar"}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">

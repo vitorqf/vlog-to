@@ -1,4 +1,4 @@
-import { ThemeSwitcher } from "@/components/theme-switcher";
+import { Footer } from "@/components/ui/footer";
 import { Header } from "@/components/ui/header";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
@@ -41,20 +41,7 @@ export default function RootLayout({
             <Header />
             {children}
             <Toaster richColors />
-            <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-              <p>
-                Powered by{" "}
-                <a
-                  href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-                  target="_blank"
-                  className="font-bold hover:underline"
-                  rel="noreferrer"
-                >
-                  Supabase
-                </a>
-              </p>
-              <ThemeSwitcher />
-            </footer>
+            <Footer />
           </ThemeProvider>
         </Registry>
       </body>
