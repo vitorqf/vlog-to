@@ -64,5 +64,9 @@
   }
   body {
     @apply bg-background text-foreground;
+    .player[data-can-play],
+    .player[data-controls] {
+      @apply hidden;
+    }
   }
 }

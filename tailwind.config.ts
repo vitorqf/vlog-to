@@ -9,6 +9,15 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    container: {
+      screens: {
+        sm: "480px",
+        md: "640px",
+        lg: "768px",
+        xl: "768px",
+        "2xl": "768px",
+      },
+    },
     extend: {
       colors: {
         background: "hsl(var(--background))",
