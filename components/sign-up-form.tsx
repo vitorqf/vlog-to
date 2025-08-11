@@ -12,48 +12,61 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+
+const signUpSchema = z
+  .object({
+    email: z.string().email("Digite um e-mail válido"),
+    password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+    repeatPassword: z
+      .string()
+      .min(6, "A senha deve ter no mínimo 6 caracteres"),
+  })
+  .refine((data) => data.password === data.repeatPassword, {
+    message: "As senhas não coincidem",
+    path: ["repeatPassword"],
+  });
+
+type SignUpFormData = z.infer<typeof signUpSchema>;
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [repeatPassword, setRepeatPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const supabase = createClient();
   const router = useRouter();
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const supabase = createClient();
-    setIsLoading(true);
-    setError(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema),
+  });
 
-    if (password !== repeatPassword) {
-      setError("As senhas não coincidem");
-      setIsLoading(false);
-      return;
-    }
-
-    try {
+  const mutation = useMutation({
+    mutationFn: async (data: SignUpFormData) => {
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: data.email,
+        password: data.password,
         options: {
           emailRedirectTo: `${window.location.origin}/feed`,
         },
       });
       if (error) throw error;
+    },
+    onSuccess: () => {
       router.push("/auth/sign-up-success");
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Ocorreu um erro");
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  const onSubmit = (data: SignUpFormData) => {
+    mutation.mutate(data);
   };
 
   return (
@@ -64,46 +77,59 @@ export function SignUpForm({
           <CardDescription>Crie uma nova conta</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSignUp}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="exemplo@exemplo.com"
+                  {...register("email")}
                 />
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                )}
               </div>
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Senha</Label>
-                </div>
+                <Label htmlFor="password">Senha</Label>
                 <Input
                   id="password"
                   type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register("password")}
                 />
+                {errors.password && (
+                  <p className="text-sm text-red-500">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="repeat-password">Repita a senha</Label>
-                </div>
+                <Label htmlFor="repeatPassword">Repita a senha</Label>
                 <Input
-                  id="repeat-password"
+                  id="repeatPassword"
                   type="password"
-                  required
-                  value={repeatPassword}
-                  onChange={(e) => setRepeatPassword(e.target.value)}
+                  {...register("repeatPassword")}
                 />
+                {errors.repeatPassword && (
+                  <p className="text-sm text-red-500">
+                    {errors.repeatPassword.message}
+                  </p>
+                )}
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Criando conta..." : "Criar conta"}
+              {mutation.isError && (
+                <p className="text-sm text-red-500 mt-1">
+                  {mutation.error instanceof Error
+                    ? mutation.error.message
+                    : "Ocorreu um erro"}
+                </p>
+              )}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={mutation.isPending}
+              >
+                {mutation.isPending ? "Criando conta..." : "Criar conta"}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
