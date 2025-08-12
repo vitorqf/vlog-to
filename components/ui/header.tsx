@@ -5,7 +5,7 @@ import { EnvVarWarning } from "../env-var-warning";
 import { ThemeSwitcher } from "../theme-switcher";
 
 export const Header = () => (
-  <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
+  <nav className="px-4 lg:px-0 w-full flex justify-center border-b border-b-foreground/10 h-16">
     <div className="container mx-auto flex justify-between items-center py-3 text-sm">
       <Link href="/">
         <p className="flex gap-5 items-center font-semibold text-xl">Vlog.to</p>

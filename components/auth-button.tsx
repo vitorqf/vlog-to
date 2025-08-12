@@ -29,7 +29,6 @@ export function AuthButton() {
             {user.email?.[0] ?? "A"}
           </AvatarFallback>
         </Avatar>
-        <span className="text-sm font-semibold">{user.email}</span>
       </div>
       <LogoutButton />
     </div>

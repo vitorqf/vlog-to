@@ -15,7 +15,6 @@ export function useToggleLike() {
         throw new Error("Usuário não autenticado");
       }
 
-      // Verificar se já curtiu
       const { data: existingLikes } = await supabase
         .from("posts_likes")
         .select("*")
@@ -23,7 +22,6 @@ export function useToggleLike() {
         .eq("user_id", userId);
 
       if (existingLikes?.length) {
-        // Já curtiu => descurtir
         const { error } = await supabase
           .from("posts_likes")
           .delete()
@@ -31,7 +29,6 @@ export function useToggleLike() {
           .eq("user_id", userId);
         if (error) throw error;
       } else {
-        // Não curtiu => curtir
         const { error } = await supabase.from("posts_likes").insert({
           post_id: postId,
           user_id: userId,

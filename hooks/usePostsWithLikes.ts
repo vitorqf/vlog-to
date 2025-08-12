@@ -26,10 +26,6 @@ export function usePostsWithLikes() {
         )
         .order("created_at", { ascending: false });
 
-      // Estrutura para facilitar:
-      // posts.likes_count = array de likes para contar
-      // posts.likes = array com likes do usuário (se existir)
-
       return (
         posts?.map((post) => ({
           ...post,
